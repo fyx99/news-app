@@ -1,7 +1,7 @@
 /**
  * Colors
  */
-export const Colors = {
+export const ColorsOld = {
 
     transparent: 'rgba(0,0,0,0)',
     white: '#ffffff',
@@ -28,11 +28,3 @@ export const FontSize = {
     large: 40,
 }
 
-
-export const Fonts = {
-    RobotoSlab_700Bold
-}
-
-let [fontsLoaded] = useFonts({
-    RobotoSlab_700Bold,
-  });

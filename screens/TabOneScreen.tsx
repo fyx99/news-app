@@ -1,12 +1,19 @@
 import { CurrentRenderContext } from '@react-navigation/native';
 import React from 'react';
-import { StyleSheet, View, Text, Image, ScrollView, TouchableHighlight, RefreshControl, Dimensions } from 'react-native';
+import { StyleSheet, View, Text, Image, ScrollView, TouchableHighlight, RefreshControl, Dimensions, Pressable, Modal } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
+import { Text as ThemedText, View as ThemedView } from '../components/Themed';
 //import NewsAPI from '../services/news'
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import useColorScheme from '../hooks/useColorScheme';
 
 import MockArticles from '../mock/mock.json';
 import { api } from '../util';
+import Colors from '../constants/Colors';
+import * as WebBrowser from 'expo-web-browser';
+import { formatDateString, formatTooLongText } from '../theme/formatters';
 
 export default function NewsScreen(props: any) {
   return (<>
@@ -25,6 +32,7 @@ interface IState {
   currentViewStartTime: any;
   currentReadStartTime: any;
   currentReadItem: any;
+  publisherModalVisible: boolean;
 }
 
 class NewsScreenInner extends React.Component<any, IState> {
@@ -40,7 +48,8 @@ class NewsScreenInner extends React.Component<any, IState> {
       currentItem: 0,
       currentViewStartTime: 0,
       currentReadItem: false,
-      currentReadStartTime: false
+      currentReadStartTime: false,
+      publisherModalVisible: false
     };
   }
   async getArticles(offset = 0) {
@@ -86,6 +95,7 @@ class NewsScreenInner extends React.Component<any, IState> {
 
 
   onScroll(evt) {
+    console.log("scroll " + evt.nativeEvent.contentOffset)
 
     let contentOffset = evt.nativeEvent.contentOffset.y
     let layoutHeight = evt.nativeEvent.layoutMeasurement.height
@@ -118,98 +128,29 @@ class NewsScreenInner extends React.Component<any, IState> {
     console.log(this.props)
   }
 
-  onPressArticle(item) {
+  async onPressArticle(item) {
     const navigation = this.props.navigation;
 
-    navigation.navigate('Webview', { url: item.amp_url || item.url })
+    //navigation.navigate('Webview', { url: item.amp_url || item.url })
+    //https://docs.expo.dev/versions/latest/sdk/webbrowser/#webbrowseropenoptions
+    const openoptions: WebBrowser.WebBrowserOpenOptions = {
+      dismissButtonStyle: 'cancel',
+      readerMode: true
+    };
+
+    const res = await WebBrowser.openBrowserAsync(item.amp_url || item.url, openoptions);
+    console.log(res)
+
     this.setState({ currentReadStartTime: new Date().toJSON(), currentReadItem: item.id })
   }
   //, height: this.state.scrollViewHeight 
 
-  formatDateString(json_date, language = "DE") {
-    const date = new Date(json_date)
-    const currentDate = new Date()
-    const diff = currentDate.getTime() - date.getTime()
-
-
-
-    if ((diff / 1000) <= 60) {
-      return this.secondsAgo(language)
-    }
-    else if ((diff / 1000 / 60) < 60) {
-      //minutes ago
-      return this.minutesAgo(Math.floor((diff / 1000 / 60)).toString(), language)
-    }
-    else if ((diff / 1000 / 60 / 60) < 24) {
-      //hours ago
-      return this.hoursAgo(Math.floor((diff / 1000 / 60 / 60)).toString(), language)
-    }
-    else if ((diff / 1000 / 60 / 60 / 24) < 10) {
-      //hours ago
-      return this.daysAgo(Math.floor((diff / 1000 / 60 / 60 / 24)).toString(), language)
-    }
-
-    return date.toLocaleDateString()
-  }
-
-  secondsAgo(language) {
-    switch (language) {
-      case "DE":
-        return "Vor wenigen Sekunden"
-      case "EN":
-        return "Seconds ago"
-
-      default:
-        break;
-    }
-  }
-  minutesAgo(number, language) {
-    switch (language) {
-      case "DE": if (number == 1) {
-        return "Vor " + number + " Minute"
-      }
-        return "Vor " + number + " Minuten"
-      case "EN":
-        if (number == 1) {
-          return number + " minute ago"
-        }
-        return number + " minutes ago"
-
-      default:
-        break;
-    }
-  }
-  hoursAgo(number, language) {
-
-    switch (language) {
-      case "DE":
-        if (number == 1) {
-          return "Vor " + number + " Stunde"
-        }
-        return "Vor " + number + " Stunden"
-      case "EN":
-        if (number == 1) {
-          return number + " hour ago"
-        }
-        return number + " hours ago"
-
-      default:
-        break;
-
-    }
-    return "break"
-  }
-
-  daysAgo(number, language) {
-    switch (language) {
-      case "DE":
-        return "Vor " + number + " Tagen"
-      case "EN":
-        return number + " days ago"
-
-      default:
-        break;
-    }
+  onPressPublisher(item, e) {
+    console.log(item)
+    console.log(e)
+    //this.setState({ publisherModalVisible: true })
+    const navigation = this.props.navigation;
+    navigation.navigate('Modal', { publisher: item })
   }
 
   render() {
@@ -222,11 +163,35 @@ class NewsScreenInner extends React.Component<any, IState> {
             //rconsole.log(item.amp_url)
             return (<TouchableHighlight key={index + "a"} onPress={this.onPressArticle.bind(this, item)} activeOpacity={1} underlayColor="rgba(255,255,255,0.1)" delayPressOut={40} delayPressIn={80} >
               <View style={{ ...styles.newsItem, height: this.state.scrollViewHeight }} >
-                <Text style={styles.newsUrl}>{item.publisher}</Text>
-                <Text style={styles.newsTitle}>{item.title}</Text>
-                <Image style={{ width: '100%', height: 350, marginVertical: 10 }} resizeMode="cover" source={{ uri: item.image_url || "https://picsum.photos/id/362/600/1300/" }} />
-                <Text style={styles.newsbody}>{item.summary.substring(0, 500)}</Text>
-                <Text style={styles.newsDate}>{this.formatDateString(item.publish_date, "DE")}</Text>
+
+                <Image style={{ width: '100%', height: 350, }} resizeMode="cover" source={{ uri: item.image_url || "https://picsum.photos/id/362/600/1300/" }} />
+                <View style={styles.newsTextPart}>
+
+                  <View style={styles.newsPublisherBlock} >
+                    <Pressable style={styles.newsPublisherBlockPressable} onPress={this.onPressPublisher.bind(this, item)}>
+                      <Image style={styles.newsPublisherIcon} resizeMode="cover" source={{ uri: item.icon_url || "https://www.n-tv.de/resources/57615475/responsive/img/touch/apple-touch-icon-144x144-precomposed.png" }} />
+                      <ThemedText style={styles.newsPublisherUrl}>{item.publisher}</ThemedText>
+                    </Pressable>
+                  </View>
+
+                  <ThemedText style={styles.newsTitle}>{item.title}</ThemedText>
+                  <ThemedText style={styles.newsbody}>{formatTooLongText(item.summary)}</ThemedText>
+                  <Text style={styles.newsDate}>{formatDateString(item.publish_date, "DE")}</Text>
+
+
+                  <View style={styles.newsInteractionBar}>
+                    <View style={styles.newsInteractionItem}>
+                      <Ionicons name={"heart-dislike-circle-outline"} size={30} color={"grey"} />
+                    </View>
+                    <View style={styles.newsInteractionItem}>
+                      <Ionicons name={"share-social-outline"} size={30} color={"grey"} />
+                    </View>
+                    <View style={styles.newsInteractionItem}>
+                      <Ionicons name={"ellipsis-vertical-sharp"} size={30} color={"grey"} />
+                    </View>
+                  </View>
+                </View>
+
               </View>
             </TouchableHighlight>)
           })}
@@ -234,9 +199,27 @@ class NewsScreenInner extends React.Component<any, IState> {
     );
     //pagingEnabled={true} 
     return (
-      <View style={{ ...styles.container, marginTop: 44 }} >
+      <ThemedView style={{ ...styles.newsContainer, }} >
 
-        <ScrollView style={{ flex: 1 }} onScrollEndDrag={this.onLoadMore.bind(this)} pagingEnabled={true} scrollEventThrottle={100} onScroll={this.onScroll.bind(this)} showsVerticalScrollIndicator={false} refreshControl={
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={this.state.publisherModalVisible}
+          onRequestClose={() => {
+            this.setState({ publisherModalVisible: !this.state.publisherModalVisible })
+          }}
+        >
+
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Text>Helo</Text>
+            </View>
+          </View>
+
+
+
+        </Modal>
+        <ScrollView style={{ flex: 1 }} onScrollEndDrag={this.onLoadMore.bind(this)} pagingEnabled={false} scrollEventThrottle={100} onScroll={this.onScroll.bind(this)} showsVerticalScrollIndicator={false} refreshControl={
           <RefreshControl
             refreshing={this.state.refreshing}
             onRefresh={this.onRefresh.bind(this)}
@@ -248,74 +231,75 @@ class NewsScreenInner extends React.Component<any, IState> {
           <View style={{ ...styles.newsItem, height: this.state.refreshing ? this.state.scrollViewHeight : 0, }} ></View>
           {news}
         </ScrollView>
-      </View>
+      </ThemedView>
     );
   }
 }
 
 
-
 const styles = StyleSheet.create({
-
-  container: {
+  centeredView: {
+    flex: 1,
+    flexDirection: "column",
+    justifyContent: "flex-end",
+  },
+  modalView: {
+    backgroundColor: "white",
+    borderRadius: 30,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    height: "70%",
+    width: "100%",
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5
+  },
+  newsContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
 
   },
 
-  listItemKpiBox: {
-    justifyContent: "flex-end",
-  },
-  row: {
-    padding: 10,
-    paddingVertical: 5,
-    justifyContent: "space-between",
-    flexDirection: "row",
-  },
-  rowVertical: {
-    width: 150
-  },
-  text: {
-    color: "#fff"
-  },
-
-
-  newsContainer: {
-    backgroundColor: '#000',
-    width: "100%",
-  },
-  listTitle: {
-    padding: 30,
-    paddingLeft: 10,
-    color: "#fff",
-    fontSize: 32,
-    fontWeight: "bold"
-  },
   newsItem: {
-    color: "#fff",
-    padding: 10,
     justifyContent: "center",
     flexDirection: "column",
 
   },
-  newsUrl: {
-    color: "#aaa",
-    fontSize: 15,
-    fontFamily: "RobotoSlab-Light"
-
+  newsPublisherUrl: {
+    fontSize: 17,
+    fontFamily: "RobotoSlab-Bold",
+    marginStart: 8
+  },
+  newsTextPart: {
+    paddingHorizontal: 15,
+    paddingTop: 10
+  },
+  newsPublisherBlock: {
+    flexDirection: 'row',
+  },
+  newsPublisherBlockPressable: {
+    flexDirection: 'row',
+    padding: 5,
+  },
+  newsPublisherIcon: {
+    width: 24,
+    height: 24,
   },
   newsTitle: {
     textAlign: "auto",
     fontFamily: "RobotoSlab-Bold",
-    color: "white",
     fontSize: 26,
   },
   newsbody: {
     lineHeight: 24,
     textAlign: "auto",
     fontFamily: "RobotoSlab-Regular",
-    color: "white",
     fontSize: 16,
   },
   newsDate: {
@@ -325,35 +309,19 @@ const styles = StyleSheet.create({
     fontFamily: "RobotoSlab-Light"
   },
 
-
-  listItem: {
-
-    color: "#fff",
-    height: 60,
-
-    justifyContent: "space-between",
-    alignItems: "center",
+  newsInteractionBar: {
     flexDirection: "row",
+    marginTop: 10,
+    alignItems: "center",
+    justifyContent: "flex-end",
 
   },
-  listItemText: {
+  newsInteractionItem: {
+    borderWidth: 1,
+    borderColor: "#eee",
+    borderRadius: 5,
+    padding: 4,
+    paddingLeft: 10
+  }
 
-    color: "#fff",
-  },
-  lable: {
-    color: "#888",
-    fontWeight: "normal",
-    fontSize: 16,
-    flex: 5
-  },
-  value: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 15,
-    flex: 3
-  },
-  rowItem: {
-    flex: 1,
-    flexDirection: "row"
-  },
 });

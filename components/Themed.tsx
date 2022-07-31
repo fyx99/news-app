@@ -1,8 +1,4 @@
-/**
- * Learn more about Light and Dark modes:
- * https://docs.expo.io/guides/color-schemes/
- */
-
+import { DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { Text as DefaultText, View as DefaultView } from 'react-native';
 
 import Colors from '../constants/Colors';
@@ -43,3 +39,23 @@ export function View(props: ViewProps) {
 
   return <DefaultView style={[{ backgroundColor }, style]} {...otherProps} />;
 }
+
+
+export const CustomTheme  = {
+  light:{
+    dark: DefaultTheme.dark,
+    colors: {
+      
+      ...DefaultTheme.colors,
+      ...Colors.light,
+      
+    }
+  },
+  dark:{
+    dark: DarkTheme.dark,
+    colors: {
+      ...DarkTheme.colors,
+      ...Colors.dark
+    }
+  }
+};

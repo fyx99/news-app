@@ -1,16 +1,8 @@
 import { StyleSheet } from 'react-native'
-import { Colors, FontSize } from './variables'
+import { FontSize } from './variables'
 
 export default StyleSheet.create({
-    screenContainer: {
-        flex: 1,
-        backgroundColor: Colors.background
-    },    
-    articleTestViewContainer: {
-        flex: 1,
-        backgroundColor: Colors.background,
 
-        },
     headerContainer: {
 
         paddingHorizontal: 10,
@@ -37,33 +29,7 @@ export default StyleSheet.create({
 
         paddingVertical: 10
     },
-    sectionTitle: {
-        paddingVertical: 15,
-        paddingHorizontal: 10,
 
-        color: Colors.text,
-        fontWeight: "bold",
-        fontSize: FontSize.regular
-    },
-    tinyText: {
-
-        color: Colors.gray,
-        fontSize: FontSize.tiny
-    },
-    smallText: {
-        color: Colors.text,
-        fontSize: FontSize.small
-    },
-    regularText: {
-        color: Colors.text,
-        fontSize: FontSize.regular
-    },
-    gray: {
-        color: Colors.gray
-    },
-    red: {
-        color: Colors.red
-    }
 
 
 });

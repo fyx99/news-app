@@ -1,19 +1,29 @@
-const tintColorLight = '#2f95dc';
-const tintColorDark = '#fff';
+import { DarkTheme, DefaultTheme } from "@react-navigation/native";
+
+
 
 export default {
   light: {
-    text: '#000',
-    background: '#fff',
-    tint: tintColorLight,
-    tabIconDefault: '#ccc',
-    tabIconSelected: tintColorLight,
+    ...DefaultTheme.colors,
+    
+    primary: "blue",
+    
+    notification: "green",
+    card: "white",
+    tint: "blue",
+
+    tabBarInactive: "#aaa",
+    tabBarActive: "black"
   },
   dark: {
-    text: '#fff',
-    background: '#000',
-    tint: tintColorDark,
-    tabIconDefault: '#ccc',
-    tabIconSelected: tintColorDark,
+    ...DarkTheme.colors,
+    
+    tint: "blue",
+    border:"white",
+    card: "#111",
+
+    
+    tabBarInactive: "#aaa",
+    tabBarActive: "white"
   },
 };

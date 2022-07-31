@@ -2,10 +2,10 @@ import { StyleSheet, View, Text, Pressable } from 'react-native';
 import { WebView } from 'react-native-webview';
 import layout from '../theme/layout';
 import React, { useState } from 'react';
-
+import { InAppBrowser } from 'react-native-inappbrowser-reborn'
 import storage from '../storage/storage'
-
-
+import { Linking, Alert } from 'react-native'
+import * as WebBrowser from 'expo-web-browser';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const ArticleViewer = ({ navigation, route }: any) => {
@@ -92,15 +92,20 @@ const ArticleViewer = ({ navigation, route }: any) => {
         //console.log(insets)
 
     }
-
+    const openLink = async (url) => {
+        await WebBrowser.openBrowserAsync(url);
+      };
     return (
-        <View style={layout.screenContainer}>
+        <View style={{flex:1}}>
             {/* <View style={[layout.rowContainer, layout.headerContainer]}>
                 <Pressable onPress={() => navigation.goBack()} hitSlop={50}>
                     <Text style={layout.regularText} >{"ᐸ"}</Text>
                 </Pressable>
             </View> */}
-            <WebView source={{ uri: url }} style={{ flex: 1, marginTop: insets.top }} onScroll={onScrollArticleView} />
+            {/* <WebView source={{ uri: url }} style={{ flex: 1 }} onScroll={onScrollArticleView} allowsInlineMediaPlayback={true} mediaPlaybackRequiresUserAction={true} /> */}
+
+            {openLink(url)}
+            
         </View>
 
     );
