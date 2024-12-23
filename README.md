@@ -1,6 +1,6 @@
 # News Aggregator App
 
-This is a simple News Aggregator app built using **React Native** for the frontend and **Express** for the backend. The app allows users to view a feed of news articles and view detailed news articles on a separate page.
+This repository contains the NewssAggregator app built using **React Native** for the frontend. It is shipped via express. The app allows users to view a feed of news articles and view detailed news articles on a separate page using an embedded web browser. Addtionally the app collects user interaction data like clicks, views and view-duration.
 
 ## Features
 
@@ -49,33 +49,4 @@ Start the React Native app (if using Expo):
 bash
 
 expo start
-Or, if you're using React Native CLI:
 
-bash
-
-npx react-native run-android   # for Android
-npx react-native run-ios       # for iOS
-
-4. Configuration
-Ensure that the React Native app is properly configured to fetch data from your Express backend. You might need to set the backend URL in your frontend configuration.
-
-js
-Copy code
-// In your frontend code, typically in an API service file
-const backendURL = 'http://localhost:3000';  // Adjust to your backend server URL
-Screens
-Feed Screen
-Displays a list of aggregated news articles.
-Each item is clickable and will navigate to the News Article Detail Page.
-News Article Detail Page
-Shows a detailed view of the selected news article.
-Uses React Native's WebView component to display the full content of the article inside the app.
-Dependencies
-React Native: For building the mobile app.
-Express: For the backend server that serves aggregated news.
-WebView: For rendering web content inside the app.
-Axios: For making API calls to the backend.
-Development
-Frontend: React Native
-Backend: Express (Node.js)
-You can customize the news feed, WebView rendering, and more as per your requirements.
